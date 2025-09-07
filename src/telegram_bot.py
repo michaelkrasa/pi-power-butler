@@ -65,40 +65,83 @@ class TelegramBot:
             else:
                 # Fetch fresh data
                 await update.message.reply_text(f"🔄 Fetching fresh {day_label} data...")
+                logger.info(f"Starting fresh data fetch for {day_label}")
 
-                # Fetch prices
-                price_fetcher = PriceFetcher()
-                prices = await price_fetcher.fetch_prices_for_date(target_date)
+                try:
+                    # Fetch prices
+                    logger.info(f"Fetching prices for {target_date}")
+                    price_fetcher = PriceFetcher()
+                    prices = await price_fetcher.fetch_prices_for_date(target_date)
+                    logger.info(f"Successfully fetched {len(prices)} price points for {day_label}")
 
-                # Fetch irradiance
-                irradiance = get_solar_forecast(
-                    settings.lat, settings.lon, settings.tilt, settings.azimuth, target_date, settings.timezone
-                )
+                    # Fetch irradiance
+                    logger.info(f"Fetching irradiance for {target_date} with timezone {settings.timezone}")
+                    irradiance = get_solar_forecast(
+                        settings.lat, settings.lon, settings.tilt, settings.azimuth, target_date, settings.timezone
+                    )
+                    logger.info(f"Successfully fetched {len(irradiance)} irradiance points for {day_label}")
 
-                # Cache the data (no graphs)
-                self.cache.cache_data(target_date, prices, irradiance)
+                    # Cache the data (no graphs)
+                    logger.info(f"Caching data for {target_date}")
+                    self.cache.cache_data(target_date, prices, irradiance)
+                    logger.info(f"Successfully cached data for {day_label}")
 
-                await update.message.reply_text(f"📊 {day_label.capitalize()}'s Data:")
-                logger.info(f"Fetched and cached fresh data for {day_label}")
+                    await update.message.reply_text(f"📊 {day_label.capitalize()}'s Data:")
+                    logger.info(f"Fetched and cached fresh data for {day_label}")
+
+                except Exception as fetch_error:
+                    logger.error(f"Error during data fetch for {day_label}: {fetch_error}", exc_info=True)
+                    await update.message.reply_text(f"❌ Error fetching {day_label} data: {str(fetch_error)}")
+                    return
 
             # Calculate solar production estimate
             daily_solar_estimate = sum(irradiance) * settings.solar_ratio
+            logger.info(f"Calculated solar estimate: {daily_solar_estimate:.1f} kWh for {day_label}")
             
             # Always generate graphs fresh (fast operation)
-            price_graph = create_price_graph(prices)
-            irradiance_graph = create_irradiance_graph(irradiance)
+            logger.info(f"Generating price graph for {day_label}")
+            try:
+                price_graph = create_price_graph(prices)
+                logger.info(f"Successfully generated price graph ({len(price_graph)} bytes)")
+            except Exception as e:
+                logger.error(f"Error generating price graph: {e}", exc_info=True)
+                await update.message.reply_text(f"❌ Error generating price graph: {str(e)}")
+                return
+
+            logger.info(f"Generating irradiance graph for {day_label}")
+            try:
+                irradiance_graph = create_irradiance_graph(irradiance)
+                logger.info(f"Successfully generated irradiance graph ({len(irradiance_graph)} bytes)")
+            except Exception as e:
+                logger.error(f"Error generating irradiance graph: {e}", exc_info=True)
+                await update.message.reply_text(f"❌ Error generating irradiance graph: {str(e)}")
+                return
 
             # Send price graph
-            await update.message.reply_photo(
-                photo=price_graph,
-                caption=f"💰 Electricity prices for {day_label}"
-            )
+            logger.info(f"Sending price graph for {day_label}")
+            try:
+                await update.message.reply_photo(
+                    photo=price_graph,
+                    caption=f"💰 Electricity prices for {day_label}"
+                )
+                logger.info(f"Successfully sent price graph for {day_label}")
+            except Exception as e:
+                logger.error(f"Error sending price graph: {e}", exc_info=True)
+                await update.message.reply_text(f"❌ Error sending price graph: {str(e)}")
+                return
 
             # Send irradiance graph
-            await update.message.reply_photo(
-                photo=irradiance_graph,
-                caption=f"☀️ Solar irradiance forecast for {day_label}\n\n⚡ Expected generation: ~{daily_solar_estimate:.1f} kWh"
-            )
+            logger.info(f"Sending irradiance graph for {day_label}")
+            try:
+                await update.message.reply_photo(
+                    photo=irradiance_graph,
+                    caption=f"☀️ Solar irradiance forecast for {day_label}\n\n⚡ Expected generation: ~{daily_solar_estimate:.1f} kWh"
+                )
+                logger.info(f"Successfully sent irradiance graph for {day_label}")
+            except Exception as e:
+                logger.error(f"Error sending irradiance graph: {e}", exc_info=True)
+                await update.message.reply_text(f"❌ Error sending irradiance graph: {str(e)}")
+                return
 
             logger.info(f"Successfully sent {day_label} data to user")
 

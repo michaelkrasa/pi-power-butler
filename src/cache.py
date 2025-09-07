@@ -75,21 +75,29 @@ class EnergyDataCache:
     def cache_data(self, date: datetime.date, prices: List[float], irradiance: List[float]):
         """Cache energy data for a specific date (data only, no graphs)."""
         date_str = date.isoformat()
+        logger.info(f"Starting cache operation for {date_str} with {len(prices)} prices and {len(irradiance)} irradiance values")
         
-        with sqlite3.connect(self.db_path) as conn:
-            conn.execute("""
-                INSERT OR REPLACE INTO energy_cache 
-                (date, prices, irradiance)
-                VALUES (?, ?, ?)
-            """, (
-                date_str,
-                json.dumps(prices),
-                json.dumps(irradiance)
-            ))
-            conn.commit()
-            
-        logger.info("Cached energy data for date", date=date_str, 
-                   prices_count=len(prices), irradiance_count=len(irradiance))
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                logger.info(f"Connected to database: {self.db_path}")
+                conn.execute("""
+                    INSERT OR REPLACE INTO energy_cache 
+                    (date, prices, irradiance)
+                    VALUES (?, ?, ?)
+                """, (
+                    date_str,
+                    json.dumps(prices),
+                    json.dumps(irradiance)
+                ))
+                logger.info(f"Executed SQL insert for {date_str}")
+                conn.commit()
+                logger.info(f"Committed transaction for {date_str}")
+                
+            logger.info("Successfully cached energy data for date", date=date_str, 
+                       prices_count=len(prices), irradiance_count=len(irradiance))
+        except Exception as e:
+            logger.error(f"Error caching data for {date_str}: {e}", exc_info=True)
+            raise
     
     def cleanup_old_data(self):
         """Remove data older than today (keep only today and tomorrow)."""

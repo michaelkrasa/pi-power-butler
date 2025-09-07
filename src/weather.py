@@ -21,7 +21,12 @@ def get_solar_forecast(lat: float, lon: float, tilt: int, azimuth: int, target_d
     Returns:
         List of 24 hourly irradiance values in W/m² for the target date.
     """
+    import logging
+    
+    logging.info(f"Fetching solar forecast for {target_date} with lat={lat}, lon={lon}, tilt={tilt}, azimuth={azimuth}, timezone={timezone}")
+    
     # Setup cache and retry
+    logging.info("Setting up cache and retry session")
     cache_session = requests_cache.CachedSession(".cache", expire_after=3600)
     retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
     openmeteo = openmeteo_requests.Client(session=retry_session)
@@ -37,11 +42,24 @@ def get_solar_forecast(lat: float, lon: float, tilt: int, azimuth: int, target_d
         "azimuth": azimuth,
         "timezone": timezone,
     }
+    
+    logging.info(f"Making weather API request to: {url}")
+    logging.info(f"Request parameters: {params}")
 
-    responses = openmeteo.weather_api(url, params=params)
-    response = responses[0]
+    try:
+        responses = openmeteo.weather_api(url, params=params)
+        logging.info(f"Received {len(responses)} responses from weather API")
+        
+        response = responses[0]
+        logging.info(f"Processing first response")
 
-    hourly = response.Hourly()
-    irradiance_values = hourly.Variables(0).ValuesAsNumpy()
-
-    return irradiance_values.tolist()
+        hourly = response.Hourly()
+        irradiance_values = hourly.Variables(0).ValuesAsNumpy()
+        
+        result = irradiance_values.tolist()
+        logging.info(f"Successfully fetched {len(result)} irradiance values")
+        return result
+        
+    except Exception as e:
+        logging.error(f"Error fetching solar forecast: {e}", exc_info=True)
+        raise
