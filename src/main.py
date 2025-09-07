@@ -8,7 +8,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from src.cache import EnergyDataCache
 from src.config import Settings
 from src.plotting import create_price_graph, create_irradiance_graph
-from src.price_fetcher import PriceFetcher
+from src.price_fetcher import PriceFetcher, PriceDataNotAvailableError
 from src.telegram_bot import TelegramBot
 from src.weather import get_solar_forecast
 
@@ -103,17 +103,36 @@ async def nightly_task(bot: TelegramBot):
         # Fetch fresh data
         logger.info("Fetching fresh data for nightly recommendation")
 
-        # Fetch prices
-        price_fetcher = PriceFetcher()
-        prices = await price_fetcher.fetch_prices_for_date(tomorrow)
+        try:
+            # Fetch prices
+            price_fetcher = PriceFetcher()
+            prices = await price_fetcher.fetch_prices_for_date(tomorrow)
 
-        # Fetch irradiance
-        irradiance = get_solar_forecast(
-            settings.lat, settings.lon, settings.tilt, settings.azimuth, tomorrow, settings.timezone
-        )
+            # Fetch irradiance
+            irradiance = get_solar_forecast(
+                settings.lat, settings.lon, settings.tilt, settings.azimuth, tomorrow, settings.timezone
+            )
 
-        # Cache the data for future use (no graphs)
-        cache.cache_data(tomorrow, prices, irradiance)
+            # Cache the data for future use (no graphs)
+            cache.cache_data(tomorrow, prices, irradiance)
+
+        except PriceDataNotAvailableError as e:
+            logger.warning(f"Price data not available for nightly task: {e}")
+            # Send a notification to the user about the unavailable data
+            await bot.send_recommendation(
+                "⏰ Tomorrow's electricity prices are not yet published.\n\n"
+                "Prices are typically available around 3 PM. The nightly recommendation will be generated once prices are available.",
+                None, None
+            )
+            return
+        except Exception as e:
+            logger.error(f"Error during nightly data fetch: {e}", exc_info=True)
+            # Send error notification
+            await bot.send_recommendation(
+                f"❌ Error generating nightly recommendation: {str(e)}",
+                None, None
+            )
+            return
 
     # Always generate graphs fresh (fast operation)
     price_graph = create_price_graph(prices)

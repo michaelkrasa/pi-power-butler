@@ -8,7 +8,7 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters
 from src.cache import EnergyDataCache
 from src.config import Settings
 from src.plotting import create_price_graph, create_irradiance_graph
-from src.price_fetcher import PriceFetcher
+from src.price_fetcher import PriceFetcher, PriceDataNotAvailableError
 from src.weather import get_solar_forecast
 
 settings = Settings()
@@ -89,6 +89,13 @@ class TelegramBot:
                     await update.message.reply_text(f"📊 {day_label.capitalize()}'s Data:")
                     logger.info(f"Fetched and cached fresh data for {day_label}")
 
+                except PriceDataNotAvailableError as fetch_error:
+                    logger.warning(f"Price data not available for {day_label}: {fetch_error}")
+                    await update.message.reply_text(
+                        f"⏰ {day_label.capitalize()}'s electricity prices are not yet published.\n\n"
+                        f"Prices are typically available around 3 PM. Please try again later! 📅"
+                    )
+                    return
                 except Exception as fetch_error:
                     logger.error(f"Error during data fetch for {day_label}: {fetch_error}", exc_info=True)
                     await update.message.reply_text(f"❌ Error fetching {day_label} data: {str(fetch_error)}")
@@ -97,7 +104,7 @@ class TelegramBot:
             # Calculate solar production estimate
             daily_solar_estimate = sum(irradiance) * settings.solar_ratio
             logger.info(f"Calculated solar estimate: {daily_solar_estimate:.1f} kWh for {day_label}")
-            
+
             # Always generate graphs fresh (fast operation)
             logger.info(f"Generating price graph for {day_label}")
             try:
