@@ -8,8 +8,10 @@ class Settings(BaseSettings):
     lon: float = 0.0
     tilt: int = 0
     azimuth: int = 0
-    alpha_mcp_url: str = "http://127.0.0.1:8000"
+    solar_ratio: float = 0.0  # Calibrated from July 2025 data using calibrate_solar_ratio.py
+    timezone: str = "Europe/Berlin"  # Timezone for consistent date handling
     telegram_bot_token: str = ""
-    solar_ratio: float = 0.011509
+    alpha_ess_app_id: str = ""
+    alpha_ess_app_secret: str = ""
 
     model_config = SettingsConfigDict(env_file=".env")

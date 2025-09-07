@@ -5,14 +5,14 @@ build-backend = "hatchling.build"
 [project]
 name = "pi-power-butler"
 version = "0.1.0"
-description = "Python service for optimizing home energy flows using rule-based logic and MCP"
+description = "Smart Energy Management Bot for Solar + Battery Optimization via Telegram"
 readme = "README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.11"
 authors = [
     {name = "Michael Krasa", email = "michael@example.com"},
 ]
-keywords = ["energy", "optimization", "solar", "battery", "tesla", "alphaess", "raspberry-pi"]
+keywords = ["energy", "optimization", "solar", "battery", "alphaess", "raspberry-pi"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: End Users/Desktop",
@@ -41,6 +41,9 @@ dependencies = [
     "backoff>=2.2.1",
     "matplotlib>=3.8.0",
     "python-telegram-bot[ext]>=20.0",
+    "alphaessopenapi>=0.0.15",
+    "aiohttp>=3.12.15",
+    "voluptuous>=0.15.2",
 ]
 
 [project.optional-dependencies]
