@@ -33,6 +33,20 @@ Smart energy management bot for solar and battery optimization via Telegram.
    ```
 3. Run: `uv run src/main.py`
 
+## Background Running
+
+To run the bot in the background (survives terminal closure):
+
+```bash
+# Simple background running
+./start_bot.sh start
+
+# Or setup as system service (auto-start on boot)
+./setup_service.sh
+```
+
+See [BACKGROUND_RUNNING.md](BACKGROUND_RUNNING.md) for detailed instructions.
+
 ## Features
 
 - SQLite caching for fast responses

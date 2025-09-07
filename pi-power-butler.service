@@ -1,0 +1,24 @@
+[Unit]
+Description=Pi-Power-Butler Energy Management Bot
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/pi-power-butler
+ExecStart=/home/pi/pi-power-butler/start_bot.sh start
+ExecStop=/home/pi/pi-power-butler/start_bot.sh stop
+ExecReload=/home/pi/pi-power-butler/start_bot.sh restart
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Environment variables
+Environment=PATH=/home/pi/.local/bin:/usr/local/bin:/usr/bin:/bin
+Environment=HOME=/home/pi
+
+[Install]
+WantedBy=multi-user.target
