@@ -35,7 +35,7 @@ def parse_date_input(text: str) -> datetime.date | None:
         return datetime.date.today() + datetime.timedelta(days=1)
     
     # Handle date patterns (day.month.year or day.month)
-    date_pattern = r'^(\d{1,2})\.(\d{1,2})(?:\.(\d{4}))?$'
+    date_pattern = r'^(\d{1,2})\.(\d{1,2})(?:\.(\d{4}))?\.?$'
     match = re.match(date_pattern, text)
     
     if match:

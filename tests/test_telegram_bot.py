@@ -24,7 +24,9 @@ def test_date_parsing():
     # European format
     current_year = today.year
     assert parse_date_input('4.9') == datetime.date(current_year, 9, 4)
+    assert parse_date_input('4.9.') == datetime.date(current_year, 9, 4)  # Trailing dot
     assert parse_date_input('4.9.2025') == datetime.date(2025, 9, 4)
+    assert parse_date_input('4.9.2025.') == datetime.date(2025, 9, 4)  # Trailing dot with year
     assert parse_date_input('25.12.2024') == datetime.date(2024, 12, 25)
     
     # Invalid dates
