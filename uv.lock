@@ -115,11 +115,11 @@ wheels = [
 
 [[package]]
 name = "alphaessopenapi"
-version = "0.0.15"
+version = "0.0.16"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a2/53/3a3c08d7ddb4ad94127fe69cfa4b72b554710174cede845f3093c55a96c9/alphaessopenapi-0.0.15.tar.gz", hash = "sha256:1b0713782383db725fbe04c04c806ed9e6a0295153ffe30cb083b5b20d4c321e", size = 6293 }
+sdist = { url = "https://files.pythonhosted.org/packages/30/81/163d12896c99880f9a2753913cac9dd4c7a2cf5ca075741e627bd339f489/alphaessopenapi-0.0.16.tar.gz", hash = "sha256:05d56fa377c8a6f31d188fa9b43552c6976b2c28fe0021a9c7672c7c938327d3", size = 6256 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6b/83/9399da7753c0e284b311560d53f1a27851bec5bf3ef44a62d76bcb82fc5a/alphaessopenapi-0.0.15-py3-none-any.whl", hash = "sha256:52828213c79a5771828238f477cf623e2e9eebbce87f554fe6ca9b01eb4dbca8", size = 6562 },
+    { url = "https://files.pythonhosted.org/packages/37/82/af26da2cd57c4fbd332fc788e0c91785fafc4444255dfe9c88f31d8eca5d/alphaessopenapi-0.0.16-py3-none-any.whl", hash = "sha256:f01fefda21479a9d7ff1779481b0e32c5b93045d3d3f5b167b82e240b5af63c3", size = 6514 },
 ]
 
 [[package]]
@@ -588,7 +588,7 @@ wheels = [
 
 [[package]]
 name = "cyclopts"
-version = "3.23.1"
+version = "3.24.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "attrs" },
@@ -596,9 +596,9 @@ dependencies = [
     { name = "rich" },
     { name = "rich-rst" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ea/7a/28b63c43d4c17d6587abcfef648841d39543158bcc47b5d40a03b8831f7a/cyclopts-3.23.1.tar.gz", hash = "sha256:ca6a5e9b326caf156d79f3932e2f88b95629e59fd371c0b3a89732b7619edacb", size = 75161 }
+sdist = { url = "https://files.pythonhosted.org/packages/30/ca/7782da3b03242d5f0a16c20371dff99d4bd1fedafe26bc48ff82e42be8c9/cyclopts-3.24.0.tar.gz", hash = "sha256:de6964a041dfb3c57bf043b41e68c43548227a17de1bad246e3a0bfc5c4b7417", size = 76131 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/63/67/ac57fbef5414ce84fe0bdeb497918ab2c781ff2cbf23c1bd91334b225669/cyclopts-3.23.1-py3-none-any.whl", hash = "sha256:8e57c6ea47d72b4b565c6a6c8a9fd56ed048ab4316627991230f4ad24ce2bc29", size = 85222 },
+    { url = "https://files.pythonhosted.org/packages/f0/8b/2c95f0645c6f40211896375e6fa51f504b8ccb29c21f6ae661fe87ab044e/cyclopts-3.24.0-py3-none-any.whl", hash = "sha256:809d04cde9108617106091140c3964ee6fceb33cecdd537f7ffa360bde13ed71", size = 86154 },
 ]
 
 [[package]]
@@ -994,14 +994,14 @@ wheels = [
 
 [[package]]
 name = "jsonschema-specifications"
-version = "2025.4.1"
+version = "2025.9.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "referencing" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/bf/ce/46fbd9c8119cfc3581ee5643ea49464d168028cfb5caff5fc0596d0cf914/jsonschema_specifications-2025.4.1.tar.gz", hash = "sha256:630159c9f4dbea161a6a2205c3011cc4f18ff381b189fff48bb39b9bf26ae608", size = 15513 }
+sdist = { url = "https://files.pythonhosted.org/packages/19/74/a633ee74eb36c44aa6d1095e7cc5569bebf04342ee146178e2d36600708b/jsonschema_specifications-2025.9.1.tar.gz", hash = "sha256:b540987f239e745613c7a9176f3edb72b832a4ac465cf02712288397832b5e8d", size = 32855 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/01/0e/b27cdbaccf30b890c40ed1da9fd4a3593a5cf94dae54fb34f8a4b74fcd3f/jsonschema_specifications-2025.4.1-py3-none-any.whl", hash = "sha256:4653bffbd6584f7de83a67e0d620ef16900b390ddc7939d56684d6c81e33f1af", size = 18437 },
+    { url = "https://files.pythonhosted.org/packages/41/45/1a4ed80516f02155c51f51e8cedb3c1902296743db0bbc66608a0db2814f/jsonschema_specifications-2025.9.1-py3-none-any.whl", hash = "sha256:98802fee3a11ee76ecaca44429fda8a41bff98b00a0f2838151b113f210cc6fe", size = 18437 },
 ]
 
 [[package]]

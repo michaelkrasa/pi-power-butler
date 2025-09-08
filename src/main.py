@@ -15,6 +15,40 @@ from src.weather import get_solar_forecast
 settings = Settings()
 logger = structlog.get_logger()
 
+# Global alphaess client and serial number
+alpha_client = None
+alpha_serial = None
+
+
+async def initialize_alphaess():
+    """Initialize the alphaess client and get the system serial number."""
+    global alpha_client, alpha_serial
+    
+    try:
+        alpha_client = alphaess(appID=settings.alpha_ess_app_id, appSecret=settings.alpha_ess_app_secret)
+        
+        # Get the system list to find the serial number
+        ess_list = await alpha_client.getESSList()
+        if not ess_list or len(ess_list) == 0:
+            logger.error("No ESS systems found!")
+            return False
+        
+        # Use the first system's serial number
+        alpha_serial = ess_list[0].get('sysSn')
+        if not alpha_serial:
+            logger.error("No serial number found in ESS list!")
+            return False
+        
+        if len(ess_list) > 1:
+            logger.warning(f"Multiple ESS systems found ({len(ess_list)}), using first one: {alpha_serial}")
+        
+        logger.info(f"Initialized AlphaESS client with serial: {alpha_serial}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Error initializing AlphaESS: {e}")
+        return False
+
 
 def generate_simple_recommendation(
         soc: float, prices: list[float], irradiance: list[float]
@@ -139,7 +173,15 @@ async def nightly_task(bot: TelegramBot):
     irradiance_graph = create_irradiance_graph(irradiance)
 
     # Fetch current SoC
-    power_data = alphaess.get_last_power_data()
+    if not alpha_client or not alpha_serial:
+        logger.error("AlphaESS not initialized, cannot fetch battery state")
+        await bot.send_recommendation(
+            "❌ Error: AlphaESS system not initialized. Cannot fetch battery state.",
+            None, None
+        )
+        return
+    
+    power_data = await alpha_client.getLastPowerData(alpha_serial)
     # Extract SoC from the nested data structure
     soc = power_data.get("data", {}).get("soc", 0.0)
     logger.info("Current battery state", soc=soc, power_data_keys=list(power_data.keys()))
@@ -154,6 +196,12 @@ async def nightly_task(bot: TelegramBot):
 
 
 async def main():
+    # Initialize AlphaESS client first
+    logger.info("Initializing AlphaESS client...")
+    if not await initialize_alphaess():
+        logger.error("Failed to initialize AlphaESS client. Exiting.")
+        return
+    
     bot = TelegramBot()
 
     scheduler = BackgroundScheduler()
@@ -167,6 +215,11 @@ async def main():
     except (KeyboardInterrupt, SystemExit):
         scheduler.shutdown()
         logger.info("Scheduler shut down.")
+    finally:
+        # Clean up alphaess client session
+        if alpha_client and hasattr(alpha_client, 'session') and alpha_client.session:
+            await alpha_client.session.close()
+            logger.info("AlphaESS client session closed.")
 
 
 if __name__ == "__main__":
