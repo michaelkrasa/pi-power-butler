@@ -16,6 +16,16 @@ settings = Settings()
 logger = structlog.get_logger()
 
 
+def is_date_within_range(target_date: datetime.date) -> bool:
+    """Check if the date is within the last 3 months (API limitation)."""
+    today = datetime.date.today()
+    tomorrow = today + datetime.timedelta(days=1)
+    three_months_ago = today - datetime.timedelta(days=90)  # Approximately 3 months
+    
+    # Allow today, tomorrow, and dates within the last 3 months
+    return three_months_ago <= target_date <= tomorrow
+
+
 def parse_date_input(text: str) -> datetime.date | None:
     """
     Parse various date input formats:
@@ -221,6 +231,16 @@ class TelegramBot:
         target_date = parse_date_input(message_text)
         
         if target_date:
+            # Check if date is within the allowed range (last 3 months)
+            if not is_date_within_range(target_date):
+                three_months_ago = datetime.date.today() - datetime.timedelta(days=90)
+                await update.message.reply_text(
+                    f"❌ Sorry, I can only access data from the last 3 months.\n\n"
+                    f"📅 Available range: {three_months_ago.strftime('%B %d, %Y')} to {datetime.date.today().strftime('%B %d, %Y')}\n\n"
+                    f"💡 Try a more recent date or use 'T' for today or 'M' for tomorrow."
+                )
+                return
+            
             # Valid date found, fetch data
             if target_date == datetime.date.today():
                 day_label = "today"
