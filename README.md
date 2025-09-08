@@ -33,6 +33,19 @@ Smart energy management bot for solar and battery optimization via Telegram.
    ```
 3. Run: `uv run src/main.py`
 
+## Testing
+
+Run the test suite:
+
+```bash
+uv run python -m pytest tests/ -v
+```
+
+This will run all tests including:
+- Date parsing functionality tests
+- Price fetching and caching tests  
+- End-to-end integration tests
+
 ## Background Running
 
 To run the bot in the background (survives terminal closure):
