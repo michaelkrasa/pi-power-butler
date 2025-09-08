@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import re
 
 import structlog
 from telegram import Bot
@@ -13,6 +14,41 @@ from src.weather import get_solar_forecast
 
 settings = Settings()
 logger = structlog.get_logger()
+
+
+def parse_date_input(text: str) -> datetime.date | None:
+    """
+    Parse various date input formats:
+    - 'T' or 'today' -> today
+    - 'M' or 'tomorrow' -> tomorrow  
+    - '4.9' -> 4th September current year
+    - '4.9.2025' -> 4th September 2025
+    - '04.09' -> 4th September current year
+    - '04.09.2025' -> 4th September 2025
+    """
+    text = text.strip().lower()
+    
+    # Handle special keywords
+    if text in ['t', 'today']:
+        return datetime.date.today()
+    elif text in ['m', 'tomorrow']:
+        return datetime.date.today() + datetime.timedelta(days=1)
+    
+    # Handle date patterns (day.month.year or day.month)
+    date_pattern = r'^(\d{1,2})\.(\d{1,2})(?:\.(\d{4}))?$'
+    match = re.match(date_pattern, text)
+    
+    if match:
+        day = int(match.group(1))
+        month = int(match.group(2))
+        year = int(match.group(3)) if match.group(3) else datetime.date.today().year
+        
+        try:
+            return datetime.date(year, month, day)
+        except ValueError:
+            return None
+    
+    return None
 
 
 class TelegramBot:
@@ -162,11 +198,13 @@ class TelegramBot:
 
         help_message = f"""{welcome_text}⚡ **Super Simple Commands:**
 
-🔥 **T** → Today's energy data
-🌅 **M** → Tomorrow's energy data  
+🔥 **T** or **today** → Today's energy data
+🌅 **M** or **tomorrow** → Tomorrow's energy data  
+📅 **4.9** → 4th September (current year)
+📅 **4.9.2025** → 4th September 2025
 ❓ **?** → Show this help
 
-📱 **That's it!** Just send one letter and get instant energy insights.
+📱 **That's it!** Just send a date and get instant energy insights.
 
 💡 **Pro tip:** Data is cached locally for lightning-fast responses! You'll see solar production estimates and get automatic daily recommendations at 6 PM with charging advice for your battery and car!
 
@@ -175,18 +213,28 @@ class TelegramBot:
         await update.message.reply_text(help_message, parse_mode='Markdown')
 
     async def handle_message(self, update, context):
-        message_text = update.message.text.strip().upper()
+        message_text = update.message.text.strip()
         chat_id = update.message.chat_id
         logger.info(f"Received message from {chat_id}: {message_text}")
 
-        # Ultra-simple single letter commands
-        if message_text == 'T':
-            await update.message.reply_text("🔥 Getting today's energy data...")
-            await self._fetch_and_send_data(update, datetime.date.today(), "today")
-        elif message_text == 'M':
-            await update.message.reply_text("🌅 Getting tomorrow's energy data...")
-            await self._fetch_and_send_data(update, datetime.date.today() + datetime.timedelta(days=1), "tomorrow")
-        elif message_text in ['?', 'H', 'HELP']:
+        # Parse the message as a date
+        target_date = parse_date_input(message_text)
+        
+        if target_date:
+            # Valid date found, fetch data
+            if target_date == datetime.date.today():
+                day_label = "today"
+                await update.message.reply_text("🔥 Getting today's energy data...")
+            elif target_date == datetime.date.today() + datetime.timedelta(days=1):
+                day_label = "tomorrow"
+                await update.message.reply_text("🌅 Getting tomorrow's energy data...")
+            else:
+                day_label = target_date.strftime("%B %d, %Y")
+                await update.message.reply_text(f"📅 Getting energy data for {day_label}...")
+            
+            await self._fetch_and_send_data(update, target_date, day_label)
+            
+        elif message_text.upper() in ['?', 'H', 'HELP']:
             await self._send_help(update)
         else:
             # For any unrecognized input, show help
